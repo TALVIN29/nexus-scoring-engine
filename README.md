@@ -49,9 +49,9 @@ Full diagram: `docs/architecture_diagram.svg` (rendered in Phase 9).
 | `config/lead_qual_config_seed.md` | Premium | TSV blocks for 16 lead_qual rules + thresholds + targets |
 | `config/alert_triage_config_seed.md` | Premium | TSV blocks for 5+ alert_triage rules + thresholds + targets |
 
-**Premium download**: [Gumroad — Scoring Engine for n8n](https://gumroad.com/l/nexus-scoring-engine)
-**Free Alert Triage**: [n8n Community (SecOps)](https://n8n.io/workflows/) *(listing pending)*
-**Free Lead Qualification**: [n8n Community (Lead Generation)](https://n8n.io/workflows/) *(listing pending)*
+**Premium download** ($49 — Gumroad): https://talvinleegen.gumroad.com/l/nexus-scoring-engine
+**Free Alert Triage**: [n8n Community (SecOps)](https://creators.n8n.io/workflows/15286) *(under review)*
+**Free Lead Qualification**: n8n Community (Lead Generation) *(under review)*
 
 ---
 

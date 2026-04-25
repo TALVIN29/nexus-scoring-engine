@@ -71,17 +71,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "value": "REPLACE-WITH-YOUR-GOOGLE-SHEET-ID",
           "mode": "list",
           "cachedResultName": "NEXUS_Config_v1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 1991945591,
           "mode": "list",
           "cachedResultName": " Execution_Log",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=1991945591"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit#gid=1991945591"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -168,17 +168,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "value": "REPLACE-WITH-YOUR-GOOGLE-SHEET-ID",
           "mode": "list",
           "cachedResultName": "NEXUS_Config_v1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 1860010146,
           "mode": "list",
           "cachedResultName": " Items",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=1860010146"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit#gid=1860010146"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -334,17 +334,17 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "value": "REPLACE-WITH-YOUR-GOOGLE-SHEET-ID",
           "mode": "list",
           "cachedResultName": "NEXUS_Config_v1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 2090887666,
           "mode": "list",
           "cachedResultName": "Notification_Targets",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=2090887666"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit#gid=2090887666"
         },
         "options": {}
       },
@@ -522,17 +522,17 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "value": "REPLACE-WITH-YOUR-GOOGLE-SHEET-ID",
           "mode": "list",
           "cachedResultName": "NEXUS_Config_v1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": 615381292,
           "mode": "list",
           "cachedResultName": "Tier_Thresholds",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=615381292"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit#gid=615381292"
         },
         "options": {}
       },
@@ -555,17 +555,17 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "value": "REPLACE-WITH-YOUR-GOOGLE-SHEET-ID",
           "mode": "list",
           "cachedResultName": "NEXUS_Config_v1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Scoring_Rules",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=0"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/REPLACE-WITH-YOUR-GOOGLE-SHEET-ID/edit#gid=0"
         },
         "options": {}
       },
@@ -662,6 +662,54 @@
         416
       ],
       "webhookId": "2778ea31-9e21-4611-b465-2abba2752468"
+    },
+    {
+      "id": "80dd1e0c-5f36-4cf0-807f-49efc710afc4",
+      "name": "Sticky Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1900,
+        -300
+      ],
+      "parameters": {
+        "color": 4,
+        "width": 520,
+        "height": 520,
+        "content": "## \u2699\ufe0f Setup (5 minutes)\n\n1. **Duplicate the Google Sheets template**\n   See README link in submission for the public copy URL.\n\n2. **Set the Sheet document ID** in every Sheets node:\n   - Click each Sheets node \u2192 Document \u2192 paste your workbook ID\n   - Or edit the JSON before import: replace\n     `REPLACE-WITH-YOUR-GOOGLE-SHEET-ID` with your sheet ID\n\n3. **Connect Google Sheets OAuth credential** in each Sheets node.\n\n4. **Paste your Slack Incoming Webhook URL** into the \"Slack Send\" node URL field.\n   - Or skip Slack entirely \u2014 GREEN tier auto-closes.\n\n5. **Activate** the workflow. Production webhook URL is on the \"S1 Webhook Ingest\" node \u2014 POST your JSON events there.\n\nSend a test:\n```bash\ncurl -X POST https://your-n8n.com/webhook/alert-triage-lite \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"alert_id\":\"TEST-1\",\"severity\":\"critical\",\"source\":\"datadog\",\"description\":\"Test\",\"config_pack\":\"alert_triage\"}'\n```\n"
+      }
+    },
+    {
+      "id": "03048ea2-ca2a-4bad-bd3b-f04d18e18e7e",
+      "name": "Sticky Flow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1100,
+        -300
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 520,
+        "height": 400,
+        "content": "## \ud83d\udcca Scoring Engine\n\nThis Lite version reads scoring rules from your Google Sheet at runtime.\n\n**Tabs the engine uses:**\n- `Scoring_Rules` \u2014 rule definitions (field, operator, value, weight, active)\n- `Tier_Thresholds` \u2014 score ranges per tier (RED / AMBER / GREEN)\n- `Notification_Targets` \u2014 Slack/email per tier\n- `Items` \u2014 every scored event appended here\n- `Execution_Log` \u2014 audit trail\n\n**To change scoring behavior**: edit the Sheet, no code changes.\n\n**This is the FREE Lite.** No SLA monitor, no Slack\u2192Email fallbacks, no test data generator. Premium ($49) on Gumroad: github.com/TALVIN29/nexus-scoring-engine\n"
+      }
+    },
+    {
+      "id": "8692d0ca-9c9c-4ec9-b567-d99be7b7e9f0",
+      "name": "Sticky Output",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        -300
+      ],
+      "parameters": {
+        "color": 5,
+        "width": 520,
+        "height": 400,
+        "content": "## \ud83d\udea6 Tier Routing\n\n| Tier | Score | Action |\n|---|---|---|\n| **RED** | 71-100 | \u2192 Slack (#critical-alerts) + Items row + Audit Log |\n| **AMBER** | 40-70 | \u2192 review queue (no Slack) + Audit Log |\n| **GREEN** | 0-39 | \u2192 auto-close + Audit Log only |\n\nCustomize per-tier routing in the `Notification_Targets` sheet \u2014 change the channel, the email, or both.\n\n\u26a0\ufe0f **Lite limitation**: if Slack URL is missing or invalid, the RED-tier webhook returns empty (no fallback). Premium adds Slack\u2192Email\u2192Error-log fallback.\n"
+      }
     }
   ],
   "connections": {
