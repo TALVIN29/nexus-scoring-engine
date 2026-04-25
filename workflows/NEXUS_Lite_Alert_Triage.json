@@ -1,0 +1,864 @@
+{
+  "name": "NEXUS Lite \u2014 Alert Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Phase 3: Consolidate final notification status\n// Exactly 1 of 4 paths feeds into this node per execution:\n// 1. P3 Notify Success (Slack worked)\n// 2. P3 Email Success (Slack failed, email worked)  \n// 3. P3 Both Failed (both failed)\n// 4. Direct from Route & Notify (no notification needed)\n\nconst input = $input.first().json;\n\n// If this came from a P3 status node, it already has updated notification_status\n// If it came directly from Route & Notify (no-notification path), use as-is\nreturn [{ json: input }];"
+      },
+      "id": "83f7b2ef-0a5e-4de8-a9e1-fbe9cb49a61e",
+      "name": "Set Notification Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.slack_channel }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.notification_message }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "c71695e5-f4f9-4198-bef7-6fbbef97290b",
+      "name": "Slack Send",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1376,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "notify-check",
+              "leftValue": "={{ $json.notification_action }}",
+              "rightValue": "send_slack",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8530baec-38ee-49bd-9de9-3aa028c688e5",
+      "name": "IF Send Notification",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "mode": "list",
+          "cachedResultName": "NEXUS_Config_v1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1991945591,
+          "mode": "list",
+          "cachedResultName": " Execution_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=1991945591"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "log_id": "={{ $('Set Notification Status').first().json.log_id }}",
+            "item_id": "={{ $('Set Notification Status').first().json.item_id }}",
+            "event_type": "={{ $('Set Notification Status').first().json.event_type }}",
+            "details": "={{ $('Set Notification Status').first().json.details }}",
+            "created_at": "={{ $('Set Notification Status').first().json.created_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "log_id",
+              "displayName": "log_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "item_id",
+              "displayName": "item_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "details",
+              "displayName": "details",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        144
+      ],
+      "id": "e2888dc5-fb3e-42ea-bd45-7ec2b59cc958",
+      "name": "Audit Log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zgCZ0ogMgw7CdDTu",
+          "name": "Nexus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "mode": "list",
+          "cachedResultName": "NEXUS_Config_v1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1860010146,
+          "mode": "list",
+          "cachedResultName": " Items",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=1860010146"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "item_id": "={{ $json.item_id }}",
+            "config_pack": "={{ $json.config_pack }}",
+            "payload_summary": "={{ $json.payload_summary }}",
+            "total_score": "={{ $json.total_score }}",
+            "tier": "={{ $json.tier }}",
+            "rules_triggered": "={{ $json.rules_triggered }}",
+            "status": "={{ $json.status }}",
+            "notification_status": "={{ $json.notification_status }}",
+            "sla_breaches": "={{ $json.sla_breaches }}",
+            "created_at": "={{ $json.created_at }}",
+            "acknowledged_at": "={{ $json.acknowledged_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "item_id",
+              "displayName": "item_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "config_pack",
+              "displayName": "config_pack",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_summary",
+              "displayName": "payload_summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_score",
+              "displayName": "total_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tier",
+              "displayName": "tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rules_triggered",
+              "displayName": "rules_triggered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notification_status",
+              "displayName": "notification_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sla_breaches",
+              "displayName": "sla_breaches",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "acknowledged_at",
+              "displayName": "acknowledged_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        144
+      ],
+      "id": "4247e1fd-481f-40b6-9369-2e79c6e873b7",
+      "name": "Write Item",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zgCZ0ogMgw7CdDTu",
+          "name": "Nexus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// NEXUS Stage 5: Route & Notify \u2014 Phase 3 (Production)\n// PRD S3.1 Stage 5: Notification with fallback chain\n// RED/HOT: Slack + email. If Slack fails \u2192 email fallback.\n// If both fail \u2192 error sheet + retry queue.\n// AMBER/WARM: log to review queue. GREEN/COLD: auto-close.\n// ============================================================\n\nconst scoreOutput = $('S3S4 Score and Classify').first().json;\nconst notificationTargetsRaw = $('Load Notification_Targets').all();\n\n// Phase 3: Check if Notification_Targets Sheets read failed\nconst ntErrors = [];\nlet notificationTargets = [];\n\nif (!notificationTargetsRaw || notificationTargetsRaw.length === 0) {\n  ntErrors.push('Notification_Targets: returned 0 rows');\n} else if (notificationTargetsRaw[0].error || (notificationTargetsRaw[0].json && notificationTargetsRaw[0].json.error)) {\n  ntErrors.push('Notification_Targets: Sheets read failed');\n} else {\n  notificationTargets = notificationTargetsRaw.map(i => i.json);\n}\n\nconst tier = scoreOutput.tier;\nconst totalScore = scoreOutput.total_score;\nconst rulesTriggered = scoreOutput.rules_triggered;\nconst configPack = scoreOutput.config_pack;\nconst payload = scoreOutput.payload;\n\nfunction generateUUID() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\n    const r = Math.random() * 16 | 0;\n    const v = c === 'x' ? r : (r & 0x3 | 0x8);\n    return v.toString(16);\n  });\n}\nconst itemId = generateUUID();\nconst logId = generateUUID();\n\nconst target = notificationTargets.find(t => \n  t.tier_name === tier && t.config_pack === configPack\n);\n\nlet action, status, notificationStatus, notificationAction;\n\nif (tier === 'RED' || tier === 'HOT') {\n  action = 'escalate';\n  status = 'open';\n  // Phase 3: actual notification routing\n  if (target && target.slack_channel) {\n    notificationAction = 'send_slack';\n    notificationStatus = 'pending_slack';\n  } else if (target && target.email_list) {\n    notificationAction = 'send_email';\n    notificationStatus = 'pending_email';\n  } else {\n    // No target config found \u2014 log error\n    notificationAction = 'no_target';\n    notificationStatus = 'error_no_target';\n  }\n} else if (tier === 'AMBER' || tier === 'WARM') {\n  action = 'review';\n  status = 'open';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n} else if (tier === 'GREEN' || tier === 'COLD') {\n  action = 'auto_close';\n  status = 'closed';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n} else {\n  action = 'review';\n  status = 'open';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n}\n\n// If Notification_Targets Sheets failed, override to error\nif (ntErrors.length > 0 && (tier === 'RED' || tier === 'HOT')) {\n  notificationAction = 'error_sheets_failed';\n  notificationStatus = 'error_config_unavailable';\n}\n\nconst notificationMessage = action === 'escalate'\n  ? `[${configPack.toUpperCase()}] ${tier} ALERT | Score: ${totalScore} | Rules: ${rulesTriggered.join(', ')} | Item: ${itemId}`\n  : '';\n\nconst payloadSummary = JSON.stringify(payload).substring(0, 500);\nconst timestamp = new Date().toISOString();\nconst auditDetails = `Score: ${totalScore} | Tier: ${tier} | Rules: ${rulesTriggered.join(', ')} | Action: ${action} | Notification: ${notificationStatus}`;\n\nreturn [{\n  json: {\n    item_id: itemId,\n    config_pack: configPack,\n    payload_summary: payloadSummary,\n    total_score: totalScore,\n    tier: tier,\n    rules_triggered: rulesTriggered.join(', '),\n    status: status,\n    notification_status: notificationStatus,\n    notification_action: notificationAction,\n    sla_breaches: 0,\n    created_at: timestamp,\n    acknowledged_at: '',\n    log_id: logId,\n    event_type: 'scored',\n    details: auditDetails,\n    action: action,\n    notification_message: notificationMessage,\n    slack_channel: target ? (target.slack_channel || '') : '',\n    email_list: target ? (target.email_list || '') : '',\n    escalation_contact: target ? (target.escalation_contact || '') : '',\n    nt_errors: ntErrors\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1824,
+        224
+      ],
+      "id": "c096f0c7-7e29-47eb-a72f-fb1b1ee2f504",
+      "name": "Route & Notify"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "mode": "list",
+          "cachedResultName": "NEXUS_Config_v1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2090887666,
+          "mode": "list",
+          "cachedResultName": "Notification_Targets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=2090887666"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2048,
+        224
+      ],
+      "id": "aef75210-8444-462e-9efa-eda9c4288567",
+      "name": "Load Notification_Targets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zgCZ0ogMgw7CdDTu",
+          "name": "Nexus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "eb0fc60a-17b3-4657-bf86-16931a1d1792",
+      "name": "Respond Fallback",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        864,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "c30c3945-7435-4191-a5b1-0f7a46fdb397",
+      "name": "Respond GREEN",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        864,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "666515d5-8b6d-4485-b1bd-87ad400ce0c8",
+      "name": "Respond AMBER",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        864,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "e8a1bd44-ab79-43ef-a1e6-8be9460eea4b",
+      "name": "Respond RED",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        864,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.tier }}",
+                    "rightValue": "RED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": "RED"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.tier }}",
+                    "rightValue": "AMBER",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": "AMBER"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.tier }}",
+                    "rightValue": "GREEN",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": "GREEN"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "bf7fceea-bee0-4b27-a011-277ae9c2fada",
+      "name": "S4 Tier Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        640,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// S3 \u2014 SCORING ENGINE + S4 \u2014 CLASSIFY\n// PRD S3.1 Stage 3: Loop through active rules, evaluate condition, sum weights.\n// PRD S3.1 Stage 3 Error: If single rule fails, skip rule, log warning, continue.\n// Phase 3: Added Sheets error detection (PRD S3.1 Stage 2 Error)\n\n// ============================================================\n// PHASE 3: CHECK IF SHEETS READS FAILED\n// PRD S3.1 Stage 2: If Sheets unavailable \u2192 log error, return HTTP 503\n// ============================================================\nconst rulesRaw = $('S2 Load Scoring Rules').all();\nconst thresholdsRaw = $('S2 Load Tier Thresholds').all();\n\n// Detect Sheets errors \u2014 when Continue On Fail fires, the item\n// has an 'error' property or the json contains error metadata\nconst sheetsErrors = [];\n\nfunction hasSheetsError(items, sheetName) {\n  if (!items || items.length === 0) {\n    sheetsErrors.push(`${sheetName}: returned 0 rows (empty or unavailable)`);\n    return true;\n  }\n  const first = items[0];\n  if (first.error) {\n    sheetsErrors.push(`${sheetName}: ${first.error.message || JSON.stringify(first.error)}`);\n    return true;\n  }\n  // n8n Continue On Fail sometimes wraps error in json\n  if (first.json && first.json.error) {\n    sheetsErrors.push(`${sheetName}: ${first.json.error.message || first.json.error}`);\n    return true;\n  }\n  return false;\n}\n\nhasSheetsError(rulesRaw, 'Scoring_Rules');\nhasSheetsError(thresholdsRaw, 'Tier_Thresholds');\n\nif (sheetsErrors.length > 0) {\n  return [{\n    json: {\n      sheets_error: true,\n      error: 'SHEETS_UNAVAILABLE',\n      error_details: sheetsErrors,\n      message: `Google Sheets config unavailable: ${sheetsErrors.join('; ')}`,\n      timestamp: new Date().toISOString()\n    }\n  }];\n}\n\n// ============================================================\n// SCORING (unchanged logic from Phase 2)\n// ============================================================\nconst validationOutput = $('S1 IF Valid').first().json;\nconst payload = validationOutput.payload;\nconst configPack = validationOutput.config_pack;\n\nconst allRules = rulesRaw.map(i => i.json);\nconst allThresholds = thresholdsRaw.map(i => i.json);\n\n// Filter rules by config_pack and active status\nconst activeRules = allRules.filter(r => \n  r.config_pack === configPack && \n  String(r.active).toUpperCase() === 'TRUE'\n);\n\n// Filter thresholds by config_pack\nconst thresholds = allThresholds.filter(t => t.config_pack === configPack);\n\nlet totalScore = 0;\nconst rulesTriggered = [];\nconst ruleResults = [];\nconst warnings = [];\n\nfor (const rule of activeRules) {\n  try {\n    const fieldValue = payload[rule.field_name];\n    const ruleValue = rule.value;\n    const operator = rule.operator;\n    const weight = Number(rule.weight);\n    \n    let matched = false;\n    \n    const fieldStr = String(fieldValue || '').toLowerCase().trim();\n    const ruleStr = String(ruleValue || '').toLowerCase().trim();\n    const fieldNum = Number(fieldValue);\n    const ruleNum = Number(ruleValue);\n    \n    switch (operator) {\n      case 'equals':\n        matched = fieldStr === ruleStr;\n        break;\n      case 'not_equals':\n        matched = fieldStr !== ruleStr;\n        break;\n      case 'greater_than':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum > ruleNum;\n        break;\n      case 'less_than':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum < ruleNum;\n        break;\n      case 'greater_equal':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum >= ruleNum;\n        break;\n      case 'less_equal':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum <= ruleNum;\n        break;\n      case 'contains':\n        matched = fieldStr.includes(ruleStr);\n        break;\n      case 'not_contains':\n        matched = !fieldStr.includes(ruleStr);\n        break;\n      case 'exists':\n        matched = fieldValue !== undefined && fieldValue !== null && fieldValue !== '';\n        break;\n      case 'not_exists':\n        matched = fieldValue === undefined || fieldValue === null || fieldValue === '';\n        break;\n      default:\n        warnings.push(`Rule ${rule.rule_id}: unknown operator '${operator}' \u2014 skipped`);\n        continue;\n    }\n    \n    ruleResults.push({\n      rule_id: rule.rule_id,\n      field_name: rule.field_name,\n      operator: operator,\n      expected: ruleValue,\n      actual: fieldValue,\n      matched: matched,\n      weight: matched ? weight : 0\n    });\n    \n    if (matched) {\n      totalScore += weight;\n      rulesTriggered.push(rule.rule_id);\n    }\n    \n  } catch (err) {\n    // PRD S3.1 Stage 3 Error: skip rule, log warning, continue\n    warnings.push(`Rule ${rule.rule_id}: execution error \u2014 ${err.message} \u2014 skipped`);\n  }\n}\n\n// S4 \u2014 CLASSIFY\nlet assignedTier = null;\nlet tierAction = null;\nlet tierChannel = null;\n\nconst sortedThresholds = thresholds.sort((a, b) => Number(b.min_score) - Number(a.min_score));\n\nfor (const t of sortedThresholds) {\n  const minScore = Number(t.min_score);\n  const maxScore = Number(t.max_score);\n  \n  if (totalScore >= minScore && totalScore <= maxScore) {\n    assignedTier = t.tier_name;\n    tierAction = t.action;\n    tierChannel = t.notification_channel;\n    break;\n  }\n}\n\nif (!assignedTier) {\n  assignedTier = 'AMBER';\n  tierAction = 'review';\n  tierChannel = 'email';\n  warnings.push(`No threshold matched score ${totalScore} \u2014 defaulted to AMBER`);\n}\n\nreturn [{\n  json: {\n    sheets_error: false,\n    total_score: totalScore,\n    tier: assignedTier,\n    action: tierAction,\n    notification_channel: tierChannel,\n    rules_triggered: rulesTriggered,\n    rules_triggered_csv: rulesTriggered.join(', '),\n    rules_evaluated: activeRules.length,\n    rules_matched: rulesTriggered.length,\n    rule_results: ruleResults,\n    warnings: warnings,\n    config_pack: configPack,\n    payload: payload,\n    scored_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "9f7b2f0c-7503-47e6-8cf7-cdef3b38ae50",
+      "name": "S3S4 Score and Classify",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2496,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "mode": "list",
+          "cachedResultName": "NEXUS_Config_v1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 615381292,
+          "mode": "list",
+          "cachedResultName": "Tier_Thresholds",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=615381292"
+        },
+        "options": {}
+      },
+      "id": "121b82b5-debf-446d-8e04-6aed1d4ddf1c",
+      "name": "S2 Load Tier Thresholds",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        320
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zgCZ0ogMgw7CdDTu",
+          "name": "Nexus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4",
+          "mode": "list",
+          "cachedResultName": "NEXUS_Config_v1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Scoring_Rules",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ED4I64JECHQVRrLR_XY4Iuq3QCGbvBvRxHTOTBhx4o4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "87c6da4a-9fc9-47a6-a1ed-91bd10c78a02",
+      "name": "S2 Load Scoring Rules",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2944,
+        320
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "zgCZ0ogMgw7CdDTu",
+          "name": "Nexus"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: 'error', error: $json.error, missing_fields: $json.missing_fields, message: $json.message }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "66b660ca-cf91-4bd1-9aa8-de230cac22a0",
+      "name": "S1 Respond 400",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -2944,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "valid-check",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fb6dce77-1f22-4b6f-b66a-3a4228100a38",
+      "name": "S1 IF Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// S1 \u2014 VALIDATE REQUIRED FIELDS\n// PRD S3.1 Stage 1: Returns HTTP 400 with missing field list if validation fails.\n\nconst item = $input.first().json;\nconst body = item.body || item;\n\n// Required fields for alert_triage config pack\nconst requiredFields = ['alert_id', 'severity', 'source', 'description'];\n\nconst missingFields = requiredFields.filter(f => {\n  const val = body[f];\n  return val === undefined || val === null || val === '';\n});\n\nif (missingFields.length > 0) {\n  return [{\n    json: {\n      valid: false,\n      error: 'VALIDATION_FAILED',\n      missing_fields: missingFields,\n      message: `Missing required fields: ${missingFields.join(', ')}`,\n      received_fields: Object.keys(body)\n    }\n  }];\n}\n\n// Pass through validated payload\nreturn [{\n  json: {\n    valid: true,\n    payload: body,\n    config_pack: body.config_pack || 'alert_triage',\n    received_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "80a8f9ca-178a-44ee-a841-90f93d779814",
+      "name": "S1 Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3392,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alert-triage-lite",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ccb5de1f-f8de-45f7-8383-264e16dce911",
+      "name": "S1 Webhook Ingest",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -3616,
+        416
+      ],
+      "webhookId": "2778ea31-9e21-4611-b465-2abba2752468"
+    }
+  ],
+  "connections": {
+    "Set Notification Status": {
+      "main": [
+        [
+          {
+            "node": "Write Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Send": {
+      "main": [
+        [
+          {
+            "node": "Set Notification Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Send Notification": {
+      "main": [
+        [
+          {
+            "node": "Slack Send",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Notification Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit Log": {
+      "main": [
+        [
+          {
+            "node": "S4 Tier Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Item": {
+      "main": [
+        [
+          {
+            "node": "Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route & Notify": {
+      "main": [
+        [
+          {
+            "node": "IF Send Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Notification_Targets": {
+      "main": [
+        [
+          {
+            "node": "Route & Notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "S4 Tier Router": {
+      "main": [
+        [
+          {
+            "node": "Respond RED",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond AMBER",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond GREEN",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "S3S4 Score and Classify": {
+      "main": [
+        [
+          {
+            "node": "Load Notification_Targets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "S2 Load Tier Thresholds": {
+      "main": [
+        [
+          {
+            "node": "S3S4 Score and Classify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "S2 Load Scoring Rules": {
+      "main": [
+        [
+          {
+            "node": "S2 Load Tier Thresholds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "S1 IF Valid": {
+      "main": [
+        [
+          {
+            "node": "S2 Load Scoring Rules",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "S1 Respond 400",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "S1 Validate Payload": {
+      "main": [
+        [
+          {
+            "node": "S1 IF Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "S1 Webhook Ingest": {
+      "main": [
+        [
+          {
+            "node": "S1 Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  }
+}

@@ -1,0 +1,47 @@
+# Secrets / credentials — NEVER commit
+client_secret*.json
+*credentials*.json
+.env
+.env.*
+*.pem
+*.key
+
+# n8n local data
+.n8n/
+*.sqlite
+*.sqlite-journal
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# Python (skill scripts, generators)
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+venv/
+.venv/
+
+# Build / packaging
+dist/
+build/
+node_modules/
+
+# Premium content — kept locally, not in public repo
+config/
+NEXUS_Core_Engine*.json
+NEXUS_SLA_Monitor*.json
+NEXUS_Test_Data_Generator.json
+NEXUS_PRD_*.docx
+progress_plan.md
+TALVIN_CORE.md
+ARCHITECT_CORE.md
+NEXUS_Phase*.md
+NEXUS_Workflow_Recovered.json
+test_lead_qual.ps1
+lead_qual_config_seed.md
