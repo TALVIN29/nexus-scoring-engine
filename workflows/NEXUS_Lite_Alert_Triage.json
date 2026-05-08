@@ -1,6 +1,101 @@
 {
-  "name": "NEXUS Lite \u2014 Alert Triage",
+  "name": "NEXUS Lite — Alert Triage",
   "nodes": [
+    {
+      "id": "aa000001-0000-4000-8000-000000000001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4224,
+        -160
+      ],
+      "parameters": {
+        "width": 480,
+        "height": 832,
+        "content": "## NEXUS Lite — Alert Triage\n\n### How it works\n\n1. A webhook receives an alert payload via POST and validates required fields (alert_id, severity, source, description).\n2. Scoring rules and tier thresholds are loaded from Google Sheets.\n3. The scoring engine evaluates each active rule against the payload and sums matched weights.\n4. The classifier assigns a tier (RED / AMBER / GREEN) based on configured score ranges.\n5. Route & Notify determines the action: Slack alert for RED, review queue for AMBER, auto-close for GREEN.\n6. The scored item is written to the Items sheet and an audit entry is appended to Execution_Log.\n\n### Setup steps\n\n- [ ] Duplicate the NEXUS_Config_v1 Google Sheets template and copy the spreadsheet ID.\n- [ ] Replace `REPLACE-WITH-YOUR-GOOGLE-SHEET-ID` in every Sheets node with your spreadsheet ID.\n- [ ] Connect a Google Sheets OAuth2 credential to each Sheets node.\n- [ ] Paste your Slack Incoming Webhook URL into the \"Slack Send\" node URL field.\n- [ ] Activate the workflow and POST a test payload to `/webhook/alert-triage-lite`.\n\n### Customization\n\nEdit scoring rules, tier thresholds, and notification targets directly in Google Sheets — no code changes required."
+      }
+    },
+    {
+      "id": "aa000001-0000-4000-8000-000000000002",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3664,
+        336
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 864,
+        "height": 336,
+        "content": "## Receive and validate payload\n\nAccepts incoming webhook POST requests, checks for required fields, and returns HTTP 400 with a missing-field list if validation fails."
+      }
+    },
+    {
+      "id": "aa000001-0000-4000-8000-000000000003",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2992,
+        240
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 640,
+        "height": 240,
+        "content": "## Load config and score\n\nReads active scoring rules and tier thresholds from Google Sheets, evaluates each rule against the payload, and sums matched weights."
+      }
+    },
+    {
+      "id": "aa000001-0000-4000-8000-000000000004",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        64
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 864,
+        "height": 320,
+        "content": "## Route and notify\n\nLoads notification targets from Google Sheets, determines the notification action based on tier, and fires a Slack webhook for RED-tier alerts."
+      }
+    },
+    {
+      "id": "aa000001-0000-4000-8000-000000000005",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        64
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 640,
+        "height": 240,
+        "content": "## Persist results\n\nWrites the scored item to the Items sheet and appends an event record to the Execution_Log audit trail."
+      }
+    },
+    {
+      "id": "aa000001-0000-4000-8000-000000000006",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -160
+      ],
+      "parameters": {
+        "color": 7,
+        "width": 416,
+        "height": 832,
+        "content": "## Route by tier and respond\n\nDispatches the result to the correct tier branch (RED / AMBER / GREEN) and sends the HTTP 200 response back to the caller."
+      }
+    },
     {
       "parameters": {
         "jsCode": "// Phase 3: Consolidate final notification status\n// Exactly 1 of 4 paths feeds into this node per execution:\n// 1. P3 Notify Success (Slack worked)\n// 2. P3 Email Success (Slack failed, email worked)  \n// 3. P3 Both Failed (both failed)\n// 4. Direct from Route & Notify (no notification needed)\n\nconst input = $input.first().json;\n\n// If this came from a P3 status node, it already has updated notification_status\n// If it came directly from Route & Notify (no-notification path), use as-is\nreturn [{ json: input }];"
@@ -319,7 +414,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ============================================================\n// NEXUS Stage 5: Route & Notify \u2014 Phase 3 (Production)\n// PRD S3.1 Stage 5: Notification with fallback chain\n// RED/HOT: Slack + email. If Slack fails \u2192 email fallback.\n// If both fail \u2192 error sheet + retry queue.\n// AMBER/WARM: log to review queue. GREEN/COLD: auto-close.\n// ============================================================\n\nconst scoreOutput = $('S3S4 Score and Classify').first().json;\nconst notificationTargetsRaw = $('Load Notification_Targets').all();\n\n// Phase 3: Check if Notification_Targets Sheets read failed\nconst ntErrors = [];\nlet notificationTargets = [];\n\nif (!notificationTargetsRaw || notificationTargetsRaw.length === 0) {\n  ntErrors.push('Notification_Targets: returned 0 rows');\n} else if (notificationTargetsRaw[0].error || (notificationTargetsRaw[0].json && notificationTargetsRaw[0].json.error)) {\n  ntErrors.push('Notification_Targets: Sheets read failed');\n} else {\n  notificationTargets = notificationTargetsRaw.map(i => i.json);\n}\n\nconst tier = scoreOutput.tier;\nconst totalScore = scoreOutput.total_score;\nconst rulesTriggered = scoreOutput.rules_triggered;\nconst configPack = scoreOutput.config_pack;\nconst payload = scoreOutput.payload;\n\nfunction generateUUID() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\n    const r = Math.random() * 16 | 0;\n    const v = c === 'x' ? r : (r & 0x3 | 0x8);\n    return v.toString(16);\n  });\n}\nconst itemId = generateUUID();\nconst logId = generateUUID();\n\nconst target = notificationTargets.find(t => \n  t.tier_name === tier && t.config_pack === configPack\n);\n\nlet action, status, notificationStatus, notificationAction;\n\nif (tier === 'RED' || tier === 'HOT') {\n  action = 'escalate';\n  status = 'open';\n  // Phase 3: actual notification routing\n  if (target && target.slack_channel) {\n    notificationAction = 'send_slack';\n    notificationStatus = 'pending_slack';\n  } else if (target && target.email_list) {\n    notificationAction = 'send_email';\n    notificationStatus = 'pending_email';\n  } else {\n    // No target config found \u2014 log error\n    notificationAction = 'no_target';\n    notificationStatus = 'error_no_target';\n  }\n} else if (tier === 'AMBER' || tier === 'WARM') {\n  action = 'review';\n  status = 'open';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n} else if (tier === 'GREEN' || tier === 'COLD') {\n  action = 'auto_close';\n  status = 'closed';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n} else {\n  action = 'review';\n  status = 'open';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n}\n\n// If Notification_Targets Sheets failed, override to error\nif (ntErrors.length > 0 && (tier === 'RED' || tier === 'HOT')) {\n  notificationAction = 'error_sheets_failed';\n  notificationStatus = 'error_config_unavailable';\n}\n\nconst notificationMessage = action === 'escalate'\n  ? `[${configPack.toUpperCase()}] ${tier} ALERT | Score: ${totalScore} | Rules: ${rulesTriggered.join(', ')} | Item: ${itemId}`\n  : '';\n\nconst payloadSummary = JSON.stringify(payload).substring(0, 500);\nconst timestamp = new Date().toISOString();\nconst auditDetails = `Score: ${totalScore} | Tier: ${tier} | Rules: ${rulesTriggered.join(', ')} | Action: ${action} | Notification: ${notificationStatus}`;\n\nreturn [{\n  json: {\n    item_id: itemId,\n    config_pack: configPack,\n    payload_summary: payloadSummary,\n    total_score: totalScore,\n    tier: tier,\n    rules_triggered: rulesTriggered.join(', '),\n    status: status,\n    notification_status: notificationStatus,\n    notification_action: notificationAction,\n    sla_breaches: 0,\n    created_at: timestamp,\n    acknowledged_at: '',\n    log_id: logId,\n    event_type: 'scored',\n    details: auditDetails,\n    action: action,\n    notification_message: notificationMessage,\n    slack_channel: target ? (target.slack_channel || '') : '',\n    email_list: target ? (target.email_list || '') : '',\n    escalation_contact: target ? (target.escalation_contact || '') : '',\n    nt_errors: ntErrors\n  }\n}];"
+        "jsCode": "// ============================================================\n// NEXUS Stage 5: Route & Notify — Phase 3 (Production)\n// PRD S3.1 Stage 5: Notification with fallback chain\n// RED/HOT: Slack + email. If Slack fails → email fallback.\n// If both fail → error sheet + retry queue.\n// AMBER/WARM: log to review queue. GREEN/COLD: auto-close.\n// ============================================================\n\nconst scoreOutput = $('S3S4 Score and Classify').first().json;\nconst notificationTargetsRaw = $('Load Notification_Targets').all();\n\n// Phase 3: Check if Notification_Targets Sheets read failed\nconst ntErrors = [];\nlet notificationTargets = [];\n\nif (!notificationTargetsRaw || notificationTargetsRaw.length === 0) {\n  ntErrors.push('Notification_Targets: returned 0 rows');\n} else if (notificationTargetsRaw[0].error || (notificationTargetsRaw[0].json && notificationTargetsRaw[0].json.error)) {\n  ntErrors.push('Notification_Targets: Sheets read failed');\n} else {\n  notificationTargets = notificationTargetsRaw.map(i => i.json);\n}\n\nconst tier = scoreOutput.tier;\nconst totalScore = scoreOutput.total_score;\nconst rulesTriggered = scoreOutput.rules_triggered;\nconst configPack = scoreOutput.config_pack;\nconst payload = scoreOutput.payload;\n\nfunction generateUUID() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\n    const r = Math.random() * 16 | 0;\n    const v = c === 'x' ? r : (r & 0x3 | 0x8);\n    return v.toString(16);\n  });\n}\nconst itemId = generateUUID();\nconst logId = generateUUID();\n\nconst target = notificationTargets.find(t => \n  t.tier_name === tier && t.config_pack === configPack\n);\n\nlet action, status, notificationStatus, notificationAction;\n\nif (tier === 'RED' || tier === 'HOT') {\n  action = 'escalate';\n  status = 'open';\n  // Phase 3: actual notification routing\n  if (target && target.slack_channel) {\n    notificationAction = 'send_slack';\n    notificationStatus = 'pending_slack';\n  } else if (target && target.email_list) {\n    notificationAction = 'send_email';\n    notificationStatus = 'pending_email';\n  } else {\n    // No target config found — log error\n    notificationAction = 'no_target';\n    notificationStatus = 'error_no_target';\n  }\n} else if (tier === 'AMBER' || tier === 'WARM') {\n  action = 'review';\n  status = 'open';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n} else if (tier === 'GREEN' || tier === 'COLD') {\n  action = 'auto_close';\n  status = 'closed';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n} else {\n  action = 'review';\n  status = 'open';\n  notificationAction = 'none';\n  notificationStatus = 'not_required';\n}\n\n// If Notification_Targets Sheets failed, override to error\nif (ntErrors.length > 0 && (tier === 'RED' || tier === 'HOT')) {\n  notificationAction = 'error_sheets_failed';\n  notificationStatus = 'error_config_unavailable';\n}\n\nconst notificationMessage = action === 'escalate'\n  ? `[${configPack.toUpperCase()}] ${tier} ALERT | Score: ${totalScore} | Rules: ${rulesTriggered.join(', ')} | Item: ${itemId}`\n  : '';\n\nconst payloadSummary = JSON.stringify(payload).substring(0, 500);\nconst timestamp = new Date().toISOString();\nconst auditDetails = `Score: ${totalScore} | Tier: ${tier} | Rules: ${rulesTriggered.join(', ')} | Action: ${action} | Notification: ${notificationStatus}`;\n\nreturn [{\n  json: {\n    item_id: itemId,\n    config_pack: configPack,\n    payload_summary: payloadSummary,\n    total_score: totalScore,\n    tier: tier,\n    rules_triggered: rulesTriggered.join(', '),\n    status: status,\n    notification_status: notificationStatus,\n    notification_action: notificationAction,\n    sla_breaches: 0,\n    created_at: timestamp,\n    acknowledged_at: '',\n    log_id: logId,\n    event_type: 'scored',\n    details: auditDetails,\n    action: action,\n    notification_message: notificationMessage,\n    slack_channel: target ? (target.slack_channel || '') : '',\n    email_list: target ? (target.email_list || '') : '',\n    escalation_contact: target ? (target.escalation_contact || '') : '',\n    nt_errors: ntErrors\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -507,7 +602,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// S3 \u2014 SCORING ENGINE + S4 \u2014 CLASSIFY\n// PRD S3.1 Stage 3: Loop through active rules, evaluate condition, sum weights.\n// PRD S3.1 Stage 3 Error: If single rule fails, skip rule, log warning, continue.\n// Phase 3: Added Sheets error detection (PRD S3.1 Stage 2 Error)\n\n// ============================================================\n// PHASE 3: CHECK IF SHEETS READS FAILED\n// PRD S3.1 Stage 2: If Sheets unavailable \u2192 log error, return HTTP 503\n// ============================================================\nconst rulesRaw = $('S2 Load Scoring Rules').all();\nconst thresholdsRaw = $('S2 Load Tier Thresholds').all();\n\n// Detect Sheets errors \u2014 when Continue On Fail fires, the item\n// has an 'error' property or the json contains error metadata\nconst sheetsErrors = [];\n\nfunction hasSheetsError(items, sheetName) {\n  if (!items || items.length === 0) {\n    sheetsErrors.push(`${sheetName}: returned 0 rows (empty or unavailable)`);\n    return true;\n  }\n  const first = items[0];\n  if (first.error) {\n    sheetsErrors.push(`${sheetName}: ${first.error.message || JSON.stringify(first.error)}`);\n    return true;\n  }\n  // n8n Continue On Fail sometimes wraps error in json\n  if (first.json && first.json.error) {\n    sheetsErrors.push(`${sheetName}: ${first.json.error.message || first.json.error}`);\n    return true;\n  }\n  return false;\n}\n\nhasSheetsError(rulesRaw, 'Scoring_Rules');\nhasSheetsError(thresholdsRaw, 'Tier_Thresholds');\n\nif (sheetsErrors.length > 0) {\n  return [{\n    json: {\n      sheets_error: true,\n      error: 'SHEETS_UNAVAILABLE',\n      error_details: sheetsErrors,\n      message: `Google Sheets config unavailable: ${sheetsErrors.join('; ')}`,\n      timestamp: new Date().toISOString()\n    }\n  }];\n}\n\n// ============================================================\n// SCORING (unchanged logic from Phase 2)\n// ============================================================\nconst validationOutput = $('S1 IF Valid').first().json;\nconst payload = validationOutput.payload;\nconst configPack = validationOutput.config_pack;\n\nconst allRules = rulesRaw.map(i => i.json);\nconst allThresholds = thresholdsRaw.map(i => i.json);\n\n// Filter rules by config_pack and active status\nconst activeRules = allRules.filter(r => \n  r.config_pack === configPack && \n  String(r.active).toUpperCase() === 'TRUE'\n);\n\n// Filter thresholds by config_pack\nconst thresholds = allThresholds.filter(t => t.config_pack === configPack);\n\nlet totalScore = 0;\nconst rulesTriggered = [];\nconst ruleResults = [];\nconst warnings = [];\n\nfor (const rule of activeRules) {\n  try {\n    const fieldValue = payload[rule.field_name];\n    const ruleValue = rule.value;\n    const operator = rule.operator;\n    const weight = Number(rule.weight);\n    \n    let matched = false;\n    \n    const fieldStr = String(fieldValue || '').toLowerCase().trim();\n    const ruleStr = String(ruleValue || '').toLowerCase().trim();\n    const fieldNum = Number(fieldValue);\n    const ruleNum = Number(ruleValue);\n    \n    switch (operator) {\n      case 'equals':\n        matched = fieldStr === ruleStr;\n        break;\n      case 'not_equals':\n        matched = fieldStr !== ruleStr;\n        break;\n      case 'greater_than':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum > ruleNum;\n        break;\n      case 'less_than':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum < ruleNum;\n        break;\n      case 'greater_equal':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum >= ruleNum;\n        break;\n      case 'less_equal':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum <= ruleNum;\n        break;\n      case 'contains':\n        matched = fieldStr.includes(ruleStr);\n        break;\n      case 'not_contains':\n        matched = !fieldStr.includes(ruleStr);\n        break;\n      case 'exists':\n        matched = fieldValue !== undefined && fieldValue !== null && fieldValue !== '';\n        break;\n      case 'not_exists':\n        matched = fieldValue === undefined || fieldValue === null || fieldValue === '';\n        break;\n      default:\n        warnings.push(`Rule ${rule.rule_id}: unknown operator '${operator}' \u2014 skipped`);\n        continue;\n    }\n    \n    ruleResults.push({\n      rule_id: rule.rule_id,\n      field_name: rule.field_name,\n      operator: operator,\n      expected: ruleValue,\n      actual: fieldValue,\n      matched: matched,\n      weight: matched ? weight : 0\n    });\n    \n    if (matched) {\n      totalScore += weight;\n      rulesTriggered.push(rule.rule_id);\n    }\n    \n  } catch (err) {\n    // PRD S3.1 Stage 3 Error: skip rule, log warning, continue\n    warnings.push(`Rule ${rule.rule_id}: execution error \u2014 ${err.message} \u2014 skipped`);\n  }\n}\n\n// S4 \u2014 CLASSIFY\nlet assignedTier = null;\nlet tierAction = null;\nlet tierChannel = null;\n\nconst sortedThresholds = thresholds.sort((a, b) => Number(b.min_score) - Number(a.min_score));\n\nfor (const t of sortedThresholds) {\n  const minScore = Number(t.min_score);\n  const maxScore = Number(t.max_score);\n  \n  if (totalScore >= minScore && totalScore <= maxScore) {\n    assignedTier = t.tier_name;\n    tierAction = t.action;\n    tierChannel = t.notification_channel;\n    break;\n  }\n}\n\nif (!assignedTier) {\n  assignedTier = 'AMBER';\n  tierAction = 'review';\n  tierChannel = 'email';\n  warnings.push(`No threshold matched score ${totalScore} \u2014 defaulted to AMBER`);\n}\n\nreturn [{\n  json: {\n    sheets_error: false,\n    total_score: totalScore,\n    tier: assignedTier,\n    action: tierAction,\n    notification_channel: tierChannel,\n    rules_triggered: rulesTriggered,\n    rules_triggered_csv: rulesTriggered.join(', '),\n    rules_evaluated: activeRules.length,\n    rules_matched: rulesTriggered.length,\n    rule_results: ruleResults,\n    warnings: warnings,\n    config_pack: configPack,\n    payload: payload,\n    scored_at: new Date().toISOString()\n  }\n}];"
+        "jsCode": "// S3 — SCORING ENGINE + S4 — CLASSIFY\n// PRD S3.1 Stage 3: Loop through active rules, evaluate condition, sum weights.\n// PRD S3.1 Stage 3 Error: If single rule fails, skip rule, log warning, continue.\n// Phase 3: Added Sheets error detection (PRD S3.1 Stage 2 Error)\n\n// ============================================================\n// PHASE 3: CHECK IF SHEETS READS FAILED\n// PRD S3.1 Stage 2: If Sheets unavailable → log error, return HTTP 503\n// ============================================================\nconst rulesRaw = $('S2 Load Scoring Rules').all();\nconst thresholdsRaw = $('S2 Load Tier Thresholds').all();\n\n// Detect Sheets errors — when Continue On Fail fires, the item\n// has an 'error' property or the json contains error metadata\nconst sheetsErrors = [];\n\nfunction hasSheetsError(items, sheetName) {\n  if (!items || items.length === 0) {\n    sheetsErrors.push(`${sheetName}: returned 0 rows (empty or unavailable)`);\n    return true;\n  }\n  const first = items[0];\n  if (first.error) {\n    sheetsErrors.push(`${sheetName}: ${first.error.message || JSON.stringify(first.error)}`);\n    return true;\n  }\n  // n8n Continue On Fail sometimes wraps error in json\n  if (first.json && first.json.error) {\n    sheetsErrors.push(`${sheetName}: ${first.json.error.message || first.json.error}`);\n    return true;\n  }\n  return false;\n}\n\nhasSheetsError(rulesRaw, 'Scoring_Rules');\nhasSheetsError(thresholdsRaw, 'Tier_Thresholds');\n\nif (sheetsErrors.length > 0) {\n  return [{\n    json: {\n      sheets_error: true,\n      error: 'SHEETS_UNAVAILABLE',\n      error_details: sheetsErrors,\n      message: `Google Sheets config unavailable: ${sheetsErrors.join('; ')}`,\n      timestamp: new Date().toISOString()\n    }\n  }];\n}\n\n// ============================================================\n// SCORING (unchanged logic from Phase 2)\n// ============================================================\nconst validationOutput = $('S1 IF Valid').first().json;\nconst payload = validationOutput.payload;\nconst configPack = validationOutput.config_pack;\n\nconst allRules = rulesRaw.map(i => i.json);\nconst allThresholds = thresholdsRaw.map(i => i.json);\n\n// Filter rules by config_pack and active status\nconst activeRules = allRules.filter(r => \n  r.config_pack === configPack && \n  String(r.active).toUpperCase() === 'TRUE'\n);\n\n// Filter thresholds by config_pack\nconst thresholds = allThresholds.filter(t => t.config_pack === configPack);\n\nlet totalScore = 0;\nconst rulesTriggered = [];\nconst ruleResults = [];\nconst warnings = [];\n\nfor (const rule of activeRules) {\n  try {\n    const fieldValue = payload[rule.field_name];\n    const ruleValue = rule.value;\n    const operator = rule.operator;\n    const weight = Number(rule.weight);\n    \n    let matched = false;\n    \n    const fieldStr = String(fieldValue || '').toLowerCase().trim();\n    const ruleStr = String(ruleValue || '').toLowerCase().trim();\n    const fieldNum = Number(fieldValue);\n    const ruleNum = Number(ruleValue);\n    \n    switch (operator) {\n      case 'equals':\n        matched = fieldStr === ruleStr;\n        break;\n      case 'not_equals':\n        matched = fieldStr !== ruleStr;\n        break;\n      case 'greater_than':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum > ruleNum;\n        break;\n      case 'less_than':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum < ruleNum;\n        break;\n      case 'greater_equal':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum >= ruleNum;\n        break;\n      case 'less_equal':\n        matched = !isNaN(fieldNum) && !isNaN(ruleNum) && fieldNum <= ruleNum;\n        break;\n      case 'contains':\n        matched = fieldStr.includes(ruleStr);\n        break;\n      case 'not_contains':\n        matched = !fieldStr.includes(ruleStr);\n        break;\n      case 'exists':\n        matched = fieldValue !== undefined && fieldValue !== null && fieldValue !== '';\n        break;\n      case 'not_exists':\n        matched = fieldValue === undefined || fieldValue === null || fieldValue === '';\n        break;\n      default:\n        warnings.push(`Rule ${rule.rule_id}: unknown operator '${operator}' — skipped`);\n        continue;\n    }\n    \n    ruleResults.push({\n      rule_id: rule.rule_id,\n      field_name: rule.field_name,\n      operator: operator,\n      expected: ruleValue,\n      actual: fieldValue,\n      matched: matched,\n      weight: matched ? weight : 0\n    });\n    \n    if (matched) {\n      totalScore += weight;\n      rulesTriggered.push(rule.rule_id);\n    }\n    \n  } catch (err) {\n    // PRD S3.1 Stage 3 Error: skip rule, log warning, continue\n    warnings.push(`Rule ${rule.rule_id}: execution error — ${err.message} — skipped`);\n  }\n}\n\n// S4 — CLASSIFY\nlet assignedTier = null;\nlet tierAction = null;\nlet tierChannel = null;\n\nconst sortedThresholds = thresholds.sort((a, b) => Number(b.min_score) - Number(a.min_score));\n\nfor (const t of sortedThresholds) {\n  const minScore = Number(t.min_score);\n  const maxScore = Number(t.max_score);\n  \n  if (totalScore >= minScore && totalScore <= maxScore) {\n    assignedTier = t.tier_name;\n    tierAction = t.action;\n    tierChannel = t.notification_channel;\n    break;\n  }\n}\n\nif (!assignedTier) {\n  assignedTier = 'AMBER';\n  tierAction = 'review';\n  tierChannel = 'email';\n  warnings.push(`No threshold matched score ${totalScore} — defaulted to AMBER`);\n}\n\nreturn [{\n  json: {\n    sheets_error: false,\n    total_score: totalScore,\n    tier: assignedTier,\n    action: tierAction,\n    notification_channel: tierChannel,\n    rules_triggered: rulesTriggered,\n    rules_triggered_csv: rulesTriggered.join(', '),\n    rules_evaluated: activeRules.length,\n    rules_matched: rulesTriggered.length,\n    rule_results: ruleResults,\n    warnings: warnings,\n    config_pack: configPack,\n    payload: payload,\n    scored_at: new Date().toISOString()\n  }\n}];"
       },
       "id": "9f7b2f0c-7503-47e6-8cf7-cdef3b38ae50",
       "name": "S3S4 Score and Classify",
@@ -635,7 +730,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// S1 \u2014 VALIDATE REQUIRED FIELDS\n// PRD S3.1 Stage 1: Returns HTTP 400 with missing field list if validation fails.\n\nconst item = $input.first().json;\nconst body = item.body || item;\n\n// Required fields for alert_triage config pack\nconst requiredFields = ['alert_id', 'severity', 'source', 'description'];\n\nconst missingFields = requiredFields.filter(f => {\n  const val = body[f];\n  return val === undefined || val === null || val === '';\n});\n\nif (missingFields.length > 0) {\n  return [{\n    json: {\n      valid: false,\n      error: 'VALIDATION_FAILED',\n      missing_fields: missingFields,\n      message: `Missing required fields: ${missingFields.join(', ')}`,\n      received_fields: Object.keys(body)\n    }\n  }];\n}\n\n// Pass through validated payload\nreturn [{\n  json: {\n    valid: true,\n    payload: body,\n    config_pack: body.config_pack || 'alert_triage',\n    received_at: new Date().toISOString()\n  }\n}];"
+        "jsCode": "// S1 — VALIDATE REQUIRED FIELDS\n// PRD S3.1 Stage 1: Returns HTTP 400 with missing field list if validation fails.\n\nconst item = $input.first().json;\nconst body = item.body || item;\n\n// Required fields for alert_triage config pack\nconst requiredFields = ['alert_id', 'severity', 'source', 'description'];\n\nconst missingFields = requiredFields.filter(f => {\n  const val = body[f];\n  return val === undefined || val === null || val === '';\n});\n\nif (missingFields.length > 0) {\n  return [{\n    json: {\n      valid: false,\n      error: 'VALIDATION_FAILED',\n      missing_fields: missingFields,\n      message: `Missing required fields: ${missingFields.join(', ')}`,\n      received_fields: Object.keys(body)\n    }\n  }];\n}\n\n// Pass through validated payload\nreturn [{\n  json: {\n    valid: true,\n    payload: body,\n    config_pack: body.config_pack || 'alert_triage',\n    received_at: new Date().toISOString()\n  }\n}];"
       },
       "id": "80a8f9ca-178a-44ee-a841-90f93d779814",
       "name": "S1 Validate Payload",
@@ -662,54 +757,6 @@
         416
       ],
       "webhookId": "2778ea31-9e21-4611-b465-2abba2752468"
-    },
-    {
-      "id": "80dd1e0c-5f36-4cf0-807f-49efc710afc4",
-      "name": "Sticky Setup",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -1900,
-        -300
-      ],
-      "parameters": {
-        "color": 4,
-        "width": 520,
-        "height": 520,
-        "content": "## \u2699\ufe0f Setup (5 minutes)\n\n1. **Duplicate the Google Sheets template**\n   See README link in submission for the public copy URL.\n\n2. **Set the Sheet document ID** in every Sheets node:\n   - Click each Sheets node \u2192 Document \u2192 paste your workbook ID\n   - Or edit the JSON before import: replace\n     `REPLACE-WITH-YOUR-GOOGLE-SHEET-ID` with your sheet ID\n\n3. **Connect Google Sheets OAuth credential** in each Sheets node.\n\n4. **Paste your Slack Incoming Webhook URL** into the \"Slack Send\" node URL field.\n   - Or skip Slack entirely \u2014 GREEN tier auto-closes.\n\n5. **Activate** the workflow. Production webhook URL is on the \"S1 Webhook Ingest\" node \u2014 POST your JSON events there.\n\nSend a test:\n```bash\ncurl -X POST https://your-n8n.com/webhook/alert-triage-lite \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"alert_id\":\"TEST-1\",\"severity\":\"critical\",\"source\":\"datadog\",\"description\":\"Test\",\"config_pack\":\"alert_triage\"}'\n```\n"
-      }
-    },
-    {
-      "id": "03048ea2-ca2a-4bad-bd3b-f04d18e18e7e",
-      "name": "Sticky Flow",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -1100,
-        -300
-      ],
-      "parameters": {
-        "color": 7,
-        "width": 520,
-        "height": 400,
-        "content": "## \ud83d\udcca Scoring Engine\n\nThis Lite version reads scoring rules from your Google Sheet at runtime.\n\n**Tabs the engine uses:**\n- `Scoring_Rules` \u2014 rule definitions (field, operator, value, weight, active)\n- `Tier_Thresholds` \u2014 score ranges per tier (RED / AMBER / GREEN)\n- `Notification_Targets` \u2014 Slack/email per tier\n- `Items` \u2014 every scored event appended here\n- `Execution_Log` \u2014 audit trail\n\n**To change scoring behavior**: edit the Sheet, no code changes.\n\n**This is the FREE Lite.** No SLA monitor, no Slack\u2192Email fallbacks, no test data generator. Premium ($49) on Gumroad: github.com/TALVIN29/nexus-scoring-engine\n"
-      }
-    },
-    {
-      "id": "8692d0ca-9c9c-4ec9-b567-d99be7b7e9f0",
-      "name": "Sticky Output",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -300,
-        -300
-      ],
-      "parameters": {
-        "color": 5,
-        "width": 520,
-        "height": 400,
-        "content": "## \ud83d\udea6 Tier Routing\n\n| Tier | Score | Action |\n|---|---|---|\n| **RED** | 71-100 | \u2192 Slack (#critical-alerts) + Items row + Audit Log |\n| **AMBER** | 40-70 | \u2192 review queue (no Slack) + Audit Log |\n| **GREEN** | 0-39 | \u2192 auto-close + Audit Log only |\n\nCustomize per-tier routing in the `Notification_Targets` sheet \u2014 change the channel, the email, or both.\n\n\u26a0\ufe0f **Lite limitation**: if Slack URL is missing or invalid, the RED-tier webhook returns empty (no fallback). Premium adds Slack\u2192Email\u2192Error-log fallback.\n"
-      }
     }
   ],
   "connections": {
